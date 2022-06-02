@@ -59,6 +59,8 @@ class MainActivity : AppCompatActivity() {
             val filePath = filesDir.path + "/myText.txt"
             Log.d("Test", "path : $filePath")
         }
+
+        GetUsageStats(this)
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
