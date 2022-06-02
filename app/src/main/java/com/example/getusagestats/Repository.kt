@@ -6,18 +6,16 @@ import android.util.Log
 import java.io.BufferedReader
 import java.io.File
 
-class Repository() {
+class Repository(val context: Context) {
     fun saveFile(fileName: String, str: String){
-        val appContext = GetUsageStatsApp().applicationContext
-        appContext.openFileOutput(fileName, Context.MODE_PRIVATE).use {
+        context.openFileOutput(fileName, Context.MODE_PRIVATE).use {
             it.write(str.toByteArray())
         }
     }
 
 
     fun readFile(fileName: String): String?{
-        val appContext = GetUsageStatsApp().applicationContext
-        val readFile = File(appContext.filesDir, fileName)
+        val readFile = File(context.filesDir, fileName)
 
         if(!readFile.exists()){
             Log.d("debug","No file exists")
@@ -27,4 +25,5 @@ class Repository() {
             return readFile.bufferedReader().use(BufferedReader::readText)
         }
     }
+
 }

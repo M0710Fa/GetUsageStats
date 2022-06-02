@@ -13,15 +13,18 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.getusagestats.databinding.ActivityMainBinding
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private val fileName = "datafile.txt"
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,8 +45,22 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+        permissionMessage()
 
+        val repository = Repository(this)
 
+        lifecycleScope.launch{
+            val past = repository.readFile(fileName)
+            val current = GetUsageStats(this@MainActivity).getUsageString()
+            val usageData = past + current
+            if (usageData != null) {
+                repository.saveFile(fileName,usageData)
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun permissionMessage(){
         if (!checkForPermission()) {
             Log.i(ContentValues.TAG, "The user may not allow the access to apps usage. ")
             Toast.makeText(
@@ -59,8 +76,6 @@ class MainActivity : AppCompatActivity() {
             val filePath = filesDir.path + "/myText.txt"
             Log.d("Test", "path : $filePath")
         }
-
-        GetUsageStats(this).getUsageData()
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
