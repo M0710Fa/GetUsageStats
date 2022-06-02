@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
             Log.d("Test", "path : $filePath")
         }
 
-        GetUsageStats(this)
+        GetUsageStats(this).getUsageData()
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
