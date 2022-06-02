@@ -3,10 +3,15 @@ package com.example.getusagestats
 import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
+import android.util.Log
 import java.util.*
 
 class GetUsageStats(val context: Context) {
     private val TAG = "GetUsageStats"
+
+    fun pong(){
+        Log.i(TAG,"Accessed GetUsageStatsClass")
+    }
 
     private fun getAppUsageStats(): MutableList<UsageStats> {
         val cal = Calendar.getInstance()
