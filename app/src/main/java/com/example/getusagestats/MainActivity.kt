@@ -13,15 +13,21 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import androidx.work.*
 import com.example.getusagestats.databinding.ActivityMainBinding
+import com.example.getusagestats.works.GetUsageWorker
+import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private val fileName = "datafile.txt"
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,8 +48,16 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+        permissionMessage()
 
+        val repository = Repository(this)
+        lifecycleScope.launch{
+            worker()
+        }
+    }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun permissionMessage(){
         if (!checkForPermission()) {
             Log.i(ContentValues.TAG, "The user may not allow the access to apps usage. ")
             Toast.makeText(
@@ -59,8 +73,6 @@ class MainActivity : AppCompatActivity() {
             val filePath = filesDir.path + "/myText.txt"
             Log.d("Test", "path : $filePath")
         }
-
-        GetUsageStats(this).getUsageData()
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -68,5 +80,15 @@ class MainActivity : AppCompatActivity() {
         val appOps = getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
         val mode = appOps.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), packageName)
         return mode == AppOpsManager.MODE_ALLOWED
+    }
+
+    private fun worker(){
+        val request = PeriodicWorkRequestBuilder<GetUsageWorker>(24, TimeUnit.HOURS)
+            .build()
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            GetUsageWorker.WORK_NAME,
+            ExistingPeriodicWorkPolicy.KEEP,
+            request
+        )
     }
 }
