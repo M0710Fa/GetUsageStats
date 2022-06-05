@@ -18,8 +18,11 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import androidx.work.*
 import com.example.getusagestats.databinding.ActivityMainBinding
+import com.example.getusagestats.works.GetUsageWorker
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
@@ -48,14 +51,8 @@ class MainActivity : AppCompatActivity() {
         permissionMessage()
 
         val repository = Repository(this)
-
         lifecycleScope.launch{
-            val past = repository.readFile(fileName)
-            val current = GetUsageStats(this@MainActivity).getUsageString()
-            val usageData = past + current
-            if (usageData != null) {
-                repository.saveFile(fileName,usageData)
-            }
+            worker()
         }
     }
 
@@ -83,5 +80,15 @@ class MainActivity : AppCompatActivity() {
         val appOps = getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
         val mode = appOps.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), packageName)
         return mode == AppOpsManager.MODE_ALLOWED
+    }
+
+    private fun worker(){
+        val request = PeriodicWorkRequestBuilder<GetUsageWorker>(24, TimeUnit.HOURS)
+            .build()
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            GetUsageWorker.WORK_NAME,
+            ExistingPeriodicWorkPolicy.KEEP,
+            request
+        )
     }
 }

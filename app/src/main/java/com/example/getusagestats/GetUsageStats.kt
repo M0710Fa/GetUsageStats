@@ -19,7 +19,7 @@ class GetUsageStats(val context: Context) {
 
     private fun getAppUsageStats(): MutableList<UsageStats> {
         val cal = Calendar.getInstance()
-        cal.add(Calendar.DAY_OF_MONTH, -1)
+        cal.add(Calendar.HOUR_OF_DAY, -25)
         // 取得する時間
 
         // queryUsageStats(取得する時間の単位, 取得する時間の始まり、取得する時間の終わり)
